@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
 import { useDispatch, useSelector } from "react-redux";
+import * as constants from "./constants/global";
 const App = () => {
   const dispatch = useDispatch();
   const allTodos = useSelector((state) => state.todos);
   const allScheduledTodos = useSelector((state) => state.scheduledTodos);
   const allNotScheduledTodos = useSelector((state) => state.notScheduledTodos);
 
-  const [todo, setTodo] = useState({
-    title: "",
-    scheduled: false,
-  });
-
+  const [todo, setTodo] = useState({ title: "", scheduled: false });
   const [data, setData] = useState([]);
-
   const [todoType, setTodoType] = useState("all");
+  const [isUpdate, setIsUpdate] = useState(false);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -25,28 +22,39 @@ const App = () => {
 
     const id = new Date().getTime();
     const payload = {
-      id,
+      id: isUpdate ? todo.id : id,
       title: todo.title,
       scheduled: todo.scheduled,
     };
-    dispatch({ type: "ADD_TODO", payload });
-    handleTypeChange(todoType);
+    dispatch({
+      type: isUpdate
+        ? constants.todoTypes.EDIT_TODO
+        : constants.todoTypes.ADD_TODO,
+      payload,
+    });
     setTodo({ title: "", scheduled: false });
+  }
+
+  function handleEdit(todo) {
+    setIsUpdate(true);
+    setTodo(todo);
   }
 
   function handleTypeChange(value) {
     setTodoType(value);
     switch (value) {
       case "all":
-        dispatch({ type: "GET_ALL_TODOS" });
+        dispatch({ type: constants.todoTypes.GET_TODOS });
         setData(allTodos);
         break;
       case "scheduled":
-        dispatch({ type: "GET_SCHEDULED_TODOS" });
+        dispatch({ type: constants.scheduledTodosTypes.GET_SCHEDULED_TODOS });
         setData(allScheduledTodos);
         break;
       case "notScheduled":
-        dispatch({ type: "GET_NOT_SCHEDULED_TODOS" });
+        dispatch({
+          type: constants.notScheduledTodosTypes.GET_NOT_SCHEDULED_TODOS,
+        });
         setData(allNotScheduledTodos);
         break;
       default:
@@ -55,7 +63,7 @@ const App = () => {
   }
   useEffect(() => {
     handleTypeChange(todoType || "all");
-  }, [allTodos, todoType]);
+  }, [todoType, todo]);
 
   return (
     <>
@@ -90,7 +98,18 @@ const App = () => {
             checked={todo.scheduled}
           />
         </div>
-        <button>Add todo</button>
+        <button>{isUpdate ? "Update" : "Add"} todo</button>
+        {isUpdate && (
+          <button
+            type="button"
+            onClick={() => {
+              setIsUpdate(false);
+              setTodo({ title: "", scheduled: false });
+            }}
+          >
+            Cancel
+          </button>
+        )}
       </form>
 
       <input
@@ -135,7 +154,7 @@ const App = () => {
                   <td>{todo.title}</td>
                   <td>{todo.scheduled ? "Yes" : "No"}</td>
                   <td>
-                    <button>Edit</button>
+                    <button onClick={() => handleEdit(todo)}>Edit</button>
                     <button>Delete</button>
                   </td>
                 </tr>
