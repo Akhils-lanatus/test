@@ -3,7 +3,7 @@ import * as constants from "../../constants/global";
 export const notScheduledTodoReducer = (state = [], action) => {
   switch (action.type) {
     case constants.notScheduledTodosTypes.GET_NOT_SCHEDULED_TODOS:
-      return state.filter((todo) => !todo.scheduled);
+      return state;
     case constants.todoTypes.ADD_TODO:
       return [...state, action.payload];
     case constants.todoTypes.REMOVE_TODO:

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Todo.css";
+
 const Todo = ({
   allTodos,
   scheduledTodos,
@@ -12,13 +13,29 @@ const Todo = ({
   removeTodo,
 }) => {
   const [todo, setTodo] = useState({
+    id: new Date().getTime(),
     title: "",
     scheduled: false,
-    id: new Date().getTime(),
   });
-  const [data, setData] = useState([]);
   const [todoType, setTodoType] = useState("all");
   const [isUpdate, setIsUpdate] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+
+  useEffect(() => {
+    switch (todoType) {
+      case "all":
+        setFilteredData(allTodos);
+        break;
+      case "scheduled":
+        setFilteredData(scheduledTodos.filter((todo) => todo.scheduled));
+        break;
+      case "notScheduled":
+        setFilteredData(notScheduledTodos.filter((todo) => !todo.scheduled));
+        break;
+      default:
+        setFilteredData([]);
+    }
+  }, [todoType, allTodos, scheduledTodos, notScheduledTodos]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -32,42 +49,31 @@ const Todo = ({
       title: todo.title,
       scheduled: todo.scheduled,
     };
+
     isUpdate ? editTodo(payload) : addTodo(payload);
-    setTodo({ title: "", scheduled: false });
+    setTodo({ title: "", scheduled: false, id: new Date().getTime() });
     setIsUpdate(false);
+    updateTypeAndState(todoType ?? "all");
   }
 
   function handleEdit(todo) {
     setIsUpdate(true);
     setTodo(todo);
+    updateTypeAndState(todoType ?? "all");
   }
 
   function handleDelete(id) {
     removeTodo(id);
+    updateTypeAndState(todoType ?? "all");
   }
 
-  function handleTypeChange(value) {
+  function updateTypeAndState(value) {
     setTodoType(value);
-    switch (value) {
-      case "all":
-        getAllTodos();
-        setData(allTodos);
-        break;
-      case "scheduled":
-        getScheduledTodos();
-        setData(scheduledTodos);
-        break;
-      case "notScheduled":
-        getNotScheduledTodos();
-        setData(notScheduledTodos);
-        break;
-      default:
-        setData([]);
-    }
+    if (value === "all") getAllTodos();
+    else if (value === "scheduled") getScheduledTodos();
+    else if (value === "notScheduled") getNotScheduledTodos();
+    else setFilteredData([]);
   }
-  useEffect(() => {
-    handleTypeChange(todoType || "all");
-  }, [todoType, todo]);
 
   return (
     <>
@@ -92,7 +98,7 @@ const Todo = ({
           />
         </div>
         <div>
-          <label htmlFor="scheduler">Scheduled??</label>
+          <label htmlFor="scheduler">Scheduled?</label>
           <input
             onChange={(e) => setTodo({ ...todo, scheduled: e.target.checked })}
             type="checkbox"
@@ -102,7 +108,7 @@ const Todo = ({
             checked={todo.scheduled}
           />
         </div>
-        <button>{isUpdate ? "Update" : "Add"} todo</button>
+        <button>{isUpdate ? "Update" : "Add"} Todo</button>
         {isUpdate && (
           <button
             type="button"
@@ -116,34 +122,37 @@ const Todo = ({
         )}
       </form>
 
-      <input
-        onChange={(e) => handleTypeChange(e.target.value)}
-        type="radio"
-        name="todoType"
-        value="all"
-        checked={todoType === "all"}
-        disabled={isUpdate}
-      />
-      <label htmlFor="all">All</label>
-      <input
-        onChange={(e) => handleTypeChange(e.target.value)}
-        type="radio"
-        name="todoType"
-        value="scheduled"
-        checked={todoType === "scheduled"}
-        disabled={isUpdate}
-      />
-      <label htmlFor="scheduled">Scheduled</label>
-      <input
-        onChange={(e) => handleTypeChange(e.target.value)}
-        type="radio"
-        name="todoType"
-        value="notScheduled"
-        checked={todoType === "notScheduled"}
-        disabled={isUpdate}
-      />
-      <label htmlFor="notScheduled">Not Scheduled</label>
-      {(data ?? []).length > 0 && (
+      <div>
+        <input
+          onChange={(e) => updateTypeAndState(e.target.value)}
+          type="radio"
+          name="todoType"
+          value="all"
+          checked={todoType === "all"}
+          disabled={isUpdate}
+        />
+        <label htmlFor="all">All</label>
+        <input
+          onChange={(e) => updateTypeAndState(e.target.value)}
+          type="radio"
+          name="todoType"
+          value="scheduled"
+          checked={todoType === "scheduled"}
+          disabled={isUpdate}
+        />
+        <label htmlFor="scheduled">Scheduled</label>
+        <input
+          onChange={(e) => updateTypeAndState(e.target.value)}
+          type="radio"
+          name="todoType"
+          value="notScheduled"
+          checked={todoType === "notScheduled"}
+          disabled={isUpdate}
+        />
+        <label htmlFor="notScheduled">Not Scheduled</label>
+      </div>
+
+      {filteredData.length > 0 ? (
         <>
           <br />
           <table>
@@ -154,9 +163,8 @@ const Todo = ({
                 <td>Actions</td>
               </tr>
             </thead>
-
             <tbody>
-              {data.map((todo) => (
+              {filteredData.map((todo) => (
                 <tr key={todo.id}>
                   <td>{todo.title}</td>
                   <td>{todo.scheduled ? "Yes" : "No"}</td>
@@ -171,6 +179,8 @@ const Todo = ({
             </tbody>
           </table>
         </>
+      ) : (
+        <p>No Todos to display</p>
       )}
     </>
   );
