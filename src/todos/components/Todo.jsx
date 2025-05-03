@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Todo.css";
+import TodoList from "./TodoList";
+import TodoAddUpdate from "./TodoAddUpdate";
 
 const Todo = ({
   allTodos,
@@ -75,110 +77,46 @@ const Todo = ({
     else setFilteredData([]);
   }
 
+  const radioButtons = [
+    { value: "all", label: "All" },
+    { value: "scheduled", label: "Scheduled" },
+    { value: "notScheduled", label: "Not Scheduled" },
+  ];
+
   return (
     <>
       <h1>Todo:</h1>
-      <form
-        style={{
-          display: "flex",
-          alignItems: "start",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-        onSubmit={handleSubmit}
-      >
-        <div>
-          <label htmlFor="title">Title</label>
-          <input
-            onChange={(e) => setTodo({ ...todo, title: e.target.value })}
-            type="text"
-            name="title"
-            id="title"
-            value={todo.title}
-          />
-        </div>
-        <div>
-          <label htmlFor="scheduler">Scheduled?</label>
-          <input
-            onChange={(e) => setTodo({ ...todo, scheduled: e.target.checked })}
-            type="checkbox"
-            name="scheduler"
-            id="scheduler"
-            value={todo.scheduled}
-            checked={todo.scheduled}
-          />
-        </div>
-        <button>{isUpdate ? "Update" : "Add"} Todo</button>
-        {isUpdate && (
-          <button
-            type="button"
-            onClick={() => {
-              setIsUpdate(false);
-              setTodo({ title: "", scheduled: false });
-            }}
-          >
-            Cancel
-          </button>
-        )}
-      </form>
 
-      <div>
-        <input
-          onChange={(e) => updateTypeAndState(e.target.value)}
-          type="radio"
-          name="todoType"
-          value="all"
-          checked={todoType === "all"}
-          disabled={isUpdate}
-        />
-        <label htmlFor="all">All</label>
-        <input
-          onChange={(e) => updateTypeAndState(e.target.value)}
-          type="radio"
-          name="todoType"
-          value="scheduled"
-          checked={todoType === "scheduled"}
-          disabled={isUpdate}
-        />
-        <label htmlFor="scheduled">Scheduled</label>
-        <input
-          onChange={(e) => updateTypeAndState(e.target.value)}
-          type="radio"
-          name="todoType"
-          value="notScheduled"
-          checked={todoType === "notScheduled"}
-          disabled={isUpdate}
-        />
-        <label htmlFor="notScheduled">Not Scheduled</label>
+      <TodoAddUpdate
+        todo={todo}
+        setTodo={setTodo}
+        isUpdate={isUpdate}
+        setIsUpdate={setIsUpdate}
+        handleSubmit={handleSubmit}
+      />
+
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        {radioButtons.map(({ value, label }) => (
+          <div key={value}>
+            <label htmlFor={value}>{label}</label>
+            <input
+              onChange={(e) => updateTypeAndState(e.target.value)}
+              type="radio"
+              name="todoType"
+              value={value}
+              checked={todoType === value}
+              disabled={isUpdate}
+            />
+          </div>
+        ))}
       </div>
 
       {filteredData.length > 0 ? (
-        <>
-          <br />
-          <table>
-            <thead>
-              <tr>
-                <td>Title</td>
-                <td>Scheduled</td>
-                <td>Actions</td>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((todo) => (
-                <tr key={todo.id}>
-                  <td>{todo.title}</td>
-                  <td>{todo.scheduled ? "Yes" : "No"}</td>
-                  <td>
-                    <button onClick={() => handleEdit(todo)}>Edit</button>
-                    <button onClick={() => handleDelete(todo.id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+        <TodoList
+          filteredData={filteredData}
+          handleEdit={handleEdit}
+          handleDelete={handleDelete}
+        />
       ) : (
         <p>No Todos to display</p>
       )}
