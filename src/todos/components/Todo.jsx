@@ -98,7 +98,6 @@ const Todo = ({
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         {radioButtons.map(({ value, label }) => (
           <div key={value}>
-            <label htmlFor={value}>{label}</label>
             <input
               onChange={(e) => updateTypeAndState(e.target.value)}
               type="radio"
@@ -107,6 +106,7 @@ const Todo = ({
               checked={todoType === value}
               disabled={isUpdate}
             />
+            <label htmlFor={value}>{label}</label>
           </div>
         ))}
       </div>
