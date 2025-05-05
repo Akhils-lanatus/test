@@ -29,10 +29,10 @@ const Todo = ({
         setFilteredData(allTodos);
         break;
       case "scheduled":
-        setFilteredData(scheduledTodos.filter((todo) => todo.scheduled));
+        setFilteredData(scheduledTodos);
         break;
       case "notScheduled":
-        setFilteredData(notScheduledTodos.filter((todo) => !todo.scheduled));
+        setFilteredData(notScheduledTodos);
         break;
       default:
         setFilteredData([]);
